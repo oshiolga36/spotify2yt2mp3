@@ -1,0 +1,34 @@
+name: Build Mac App
+
+on: [push] 
+
+jobs:
+  build:
+    runs-on: macos-latest 
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11' 
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+        spotdl --download-ffmpeg
+
+    - name: Build with PyInstaller
+      run: |
+        # Wir finden heraus, wo spotdl ffmpeg gespeichert hat und kopieren es
+        FFMPEG_DIR=$(dirname $(which ffmpeg))
+        cp $FFMPEG_DIR/ffmpeg .
+        pyinstaller --noconfirm --onefile --windowed --add-binary "ffmpeg:." --name "Musik_Lader_Mac" musik_downloader.py
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Musik_Lader_MacOS
+        path: dist/Musik_Lader_Mac
