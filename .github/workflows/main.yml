@@ -25,22 +25,17 @@ jobs:
 
     - name: Download FFmpeg
       run: |
-        # Wir laden FFmpeg und suchen dann genau, wo es gelandet ist
         spotdl --download-ffmpeg
-        # Wir kopieren es aus dem Standard-Verzeichnis von spotdl in unser aktuelles Verzeichnis
         cp ~/.spotdl/ffmpeg . || cp /usr/local/bin/ffmpeg . || echo "FFmpeg nicht gefunden"
-        # Sicherstellen, dass es ausführbar ist
         chmod +x ffmpeg
 
     - name: Build with PyInstaller
       run: |
-        # Wir prüfen zur Sicherheit im Log, ob die Datei wirklich da ist
-        ls -la
-        
+        # Name angepasst auf Playlistdownloader.py
         pyinstaller --noconfirm --onefile --windowed \
         --add-binary "ffmpeg:." \
         --name "Musik_Lader_Mac" \
-        musik_downloader.py
+        Playlistdownloader.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
