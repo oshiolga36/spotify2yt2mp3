@@ -1,37 +1,47 @@
 name: Build Mac App
 
-on: [push] 
+on: 
+  push:
+    branches: [ "main" ] # Führt den Build aus, wenn du Code hochlädst
+  workflow_dispatch: # Erlaubt es dir, den Build manuell zu starten
 
 jobs:
   build:
-    runs-on: macos-latest 
+    runs-on: macos-latest
     
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.11' 
+        python-version: '3.11' # Stabilste Version für PyInstaller
 
-- name: Install Dependencies
+    - name: Install Dependencies
       run: |
-        pip install -r requirements.txt
-        # Wir sagen spotdl, es soll ffmpeg direkt hierher installieren
+        python -m pip install --upgrade pip
+        pip install yt-dlp spotdl pyinstaller
+        # FFmpeg direkt in den aktuellen Ordner laden
         spotdl --download-ffmpeg .
+
+    - name: Prepare FFmpeg
+      run: |
+        # Sicherstellen, dass die Datei ausführbar ist (wichtig für Mac)
+        chmod +x ffmpeg
+        # Testen ob ffmpeg da ist
+        ls -l ffmpeg
 
     - name: Build with PyInstaller
       run: |
-        # Auf Mac heißt die Datei nach dem Download einfach 'ffmpeg'
-        # Wir stellen sicher, dass sie ausführbar ist
-        chmod +x ffmpeg
-        
-        # Build-Befehl mit Doppelpunkt für Mac
-        pyinstaller --noconfirm --onefile --windowed --add-binary "ffmpeg:." --name "Musik_Lader_Mac" musik_downloader.py
+        # Beachte den Doppelpunkt ":" bei --add-binary für Mac
+        pyinstaller --noconfirm --onefile --windowed \
+        --add-binary "ffmpeg:." \
+        --name "Musik_Lader_Mac" \
+        musik_downloader.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Musik_Lader_MacOS
+        name: Musik_Lader_MacOS_Datei
         path: dist/Musik_Lader_Mac
