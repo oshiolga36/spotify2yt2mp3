@@ -15,16 +15,19 @@ jobs:
       with:
         python-version: '3.11' 
 
-    - name: Install Dependencies
+- name: Install Dependencies
       run: |
         pip install -r requirements.txt
-        spotdl --download-ffmpeg
+        # Wir sagen spotdl, es soll ffmpeg direkt hierher installieren
+        spotdl --download-ffmpeg .
 
     - name: Build with PyInstaller
       run: |
-        # Wir finden heraus, wo spotdl ffmpeg gespeichert hat und kopieren es
-        FFMPEG_DIR=$(dirname $(which ffmpeg))
-        cp $FFMPEG_DIR/ffmpeg .
+        # Auf Mac heißt die Datei nach dem Download einfach 'ffmpeg'
+        # Wir stellen sicher, dass sie ausführbar ist
+        chmod +x ffmpeg
+        
+        # Build-Befehl mit Doppelpunkt für Mac
         pyinstaller --noconfirm --onefile --windowed --add-binary "ffmpeg:." --name "Musik_Lader_Mac" musik_downloader.py
 
     - name: Upload Artifact
